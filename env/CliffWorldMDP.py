@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 MAP = [
         "FFFFFFFFFF",
         "FFFFFFFFFF",
@@ -22,10 +25,23 @@ class CliffWorld:
         self._initial_state = 0
         self._current_state = self._initial_state
         self._n_states = len(self._states)
+        self._moves = []
+
+    def draw(self):
+        mapping = {'F': 2, 'S': 1, 'H': 0, 'G': 3}
+        map = np.zeros((4, 10))
+        for h in range(4):
+            for w in range(10):
+                map[h, w] = mapping[MAP[h][w]]
+        plt.matshow(map)
+
+        for move in self._moves:
+            plt.plot(move[0][1], move[0][0], move[1][1], move[1][0], marker='o', c='black', ls='-')
 
     def reset(self):
         """ resets state of the environment """
         self._current_state = self._initial_state
+        self._moves = []
         return self._current_state
 
     def get_all_states(self):
@@ -67,6 +83,7 @@ class CliffWorld:
 
     def step(self, action):
         current_x, current_y = self.__state_to_xy(self._current_state)
+        start_x, start_y = current_x, current_y
         if action == LEFT and current_x > 0:
             current_x -= 1
         elif action == RIGHT and current_x < len(MAP[0]) - 1:
@@ -78,6 +95,10 @@ class CliffWorld:
 
         prev_state = self._current_state
         self._current_state = current_y * len(MAP[0]) + current_x
+
+        move = ((start_y, start_x), (current_y, current_x))
+        self._moves.append(move)
+
         return self._current_state, self.get_reward(prev_state, action, self._current_state), \
                self.is_terminal(self._current_state), None
 

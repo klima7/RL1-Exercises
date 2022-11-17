@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 MAPS = {
     "4x4": [
         "SFFF",
@@ -37,10 +40,24 @@ class frozenLake:
         self._initial_state = 0
         self._current_state = self._initial_state
         self._n_states = len(self._states)
+        self._moves = []
+
+    def draw(self):
+        string_map = MAPS[self.type]
+        mapping = {'F': 2, 'S': 1, 'H': 0, 'G': 3}
+        map = np.zeros((len(string_map), len(string_map[0])))
+        for h in range(map.shape[0]):
+            for w in range(map.shape[1]):
+                map[h, w] = mapping[string_map[h][w]]
+        plt.matshow(map)
+
+        for move in self._moves:
+            plt.plot(move[0][1], move[0][0], move[1][1], move[1][0], marker='o', c='black', ls='-')
 
     def reset(self):
         """ resets state of the environment """
         self._current_state = self._initial_state
+        self._moves = []
         return self._current_state
 
     def get_all_states(self):
@@ -76,6 +93,7 @@ class frozenLake:
 
     def step(self, action):
         current_x, current_y = self.__state_to_xy(self._current_state)
+        start_x, start_y = current_x, current_y
         if action == LEFT and current_x > 0:
             current_x -= 1
         elif action == RIGHT and current_x < len(MAPS[self.type][0]) - 1:
@@ -87,6 +105,10 @@ class frozenLake:
 
         prev_state = self._current_state
         self._current_state = current_y * len(MAPS[self.type][0]) + current_x
+
+        move = ((start_y, start_x), (current_y, current_x))
+        self._moves.append(move)
+
         return self._current_state, self.get_reward(prev_state, action, self._current_state), \
                self.is_terminal(self._current_state), None
 
